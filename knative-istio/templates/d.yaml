@@ -1,0 +1,67 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "knative-istio.fullname" . }}-d
+  labels:
+    app: istiod
+    install.operator.istio.io/owning-resource: unknown
+    istio: pilot
+    istio.io/rev: default
+    operator.istio.io/component: Pilot
+    release: istio
+  {{- include "knative-istio.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.d.minAvailable }}
+  maxUnavailable: {{ .Values.d.maxUnavailable }}
+  selector:
+    matchLabels:
+      app: istiod
+      istio: pilot
+    {{- include "knative-istio.selectorLabels" . | nindent 6 }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "knative-istio.fullname" . }}-d
+  labels:
+    app: istiod
+    install.operator.istio.io/owning-resource: unknown
+    istio.io/rev: default
+    operator.istio.io/component: Pilot
+    release: istio
+  {{- include "knative-istio.labels" . | nindent 4 }}
+spec:
+  maxReplicas: 10
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 60
+        type: Utilization
+    type: Resource
+  minReplicas: 3
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: istiod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "knative-istio.fullname" . }}-d
+  labels:
+    app: istiod
+    install.operator.istio.io/owning-resource: unknown
+    istio: pilot
+    istio.io/rev: default
+    operator.istio.io/component: Pilot
+    release: istio
+  {{- include "knative-istio.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.d.type }}
+  selector:
+    app: istiod
+    istio: pilot
+  {{- include "knative-istio.selectorLabels" . | nindent 4 }}
+  ports:
+	{{- .Values.d.ports | toYaml | nindent 2 }}

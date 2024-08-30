@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "knative-net-istio.fullname" . }}-net-istio-controller
+  labels:
+    app.kubernetes.io/component: net-istio
+    networking.knative.dev/ingress-provider: istio
+  {{- include "knative-net-istio.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: net-istio-controller
+    {{- include "knative-net-istio.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: net-istio-controller
+        app.kubernetes.io/component: net-istio
+        app.kubernetes.io/name: knative-serving
+        app.kubernetes.io/version: 1.15.1
+      {{- include "knative-net-istio.selectorLabels" . | nindent 8 }}
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - env:
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: CONFIG_LOGGING_NAME
+          value: {{ quote .Values.netIstioController.controller.env.configLoggingName }}
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: {{ quote .Values.netIstioController.controller.env.configObservabilityName
+            }}
+        - name: ENABLE_SECRET_INFORMER_FILTERING_BY_CERT_UID
+          value: {{ quote .Values.netIstioController.controller.env.enableSecretInformerFilteringByCertUid
+            }}
+        - name: METRICS_DOMAIN
+          value: {{ quote .Values.netIstioController.controller.env.metricsDomain }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.netIstioController.controller.image.repository }}:{{ .Values.netIstioController.controller.image.tag
+          | default .Chart.AppVersion }}
+        livenessProbe:
+          failureThreshold: 6
+          httpGet:
+            path: /health
+            port: probes
+            scheme: HTTP
+          periodSeconds: 5
+        name: controller
+        ports:
+        - containerPort: 9090
+          name: metrics
+        - containerPort: 8008
+          name: profiling
+        - containerPort: 8080
+          name: probes
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /readiness
+            port: probes
+            scheme: HTTP
+          periodSeconds: 5
+        resources: {{- toYaml .Values.netIstioController.controller.resources | nindent
+          10 }}
+        securityContext: {{- toYaml .Values.netIstioController.controller.containerSecurityContext
+          | nindent 10 }}
+      serviceAccountName: controller
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "knative-net-istio.fullname" . }}-net-istio-webhook
+  labels:
+    app.kubernetes.io/component: net-istio
+    networking.knative.dev/ingress-provider: istio
+  {{- include "knative-net-istio.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: net-istio-webhook
+      role: net-istio-webhook
+    {{- include "knative-net-istio.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: net-istio-webhook
+        app.kubernetes.io/component: net-istio
+        app.kubernetes.io/name: knative-serving
+        app.kubernetes.io/version: 1.15.1
+        role: net-istio-webhook
+      {{- include "knative-net-istio.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: CONFIG_LOGGING_NAME
+          value: {{ quote .Values.netIstioWebhook.webhook.env.configLoggingName }}
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: {{ quote .Values.netIstioWebhook.webhook.env.configObservabilityName }}
+        - name: METRICS_DOMAIN
+          value: {{ quote .Values.netIstioWebhook.webhook.env.metricsDomain }}
+        - name: WEBHOOK_NAME
+          value: {{ quote .Values.netIstioWebhook.webhook.env.webhookName }}
+        - name: WEBHOOK_PORT
+          value: {{ quote .Values.netIstioWebhook.webhook.env.webhookPort }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.netIstioWebhook.webhook.image.repository }}:{{ .Values.netIstioWebhook.webhook.image.tag
+          | default .Chart.AppVersion }}
+        livenessProbe:
+          failureThreshold: 6
+          httpGet:
+            port: 8443
+            scheme: HTTPS
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        name: webhook
+        ports:
+        - containerPort: 9090
+          name: metrics
+        - containerPort: 8008
+          name: profiling
+        - containerPort: 8443
+          name: https-webhook
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            port: 8443
+            scheme: HTTPS
+          periodSeconds: 1
+        resources: {{- toYaml .Values.netIstioWebhook.webhook.resources | nindent 10 }}
+        securityContext: {{- toYaml .Values.netIstioWebhook.webhook.containerSecurityContext
+          | nindent 10 }}
+      serviceAccountName: controller

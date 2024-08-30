@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "knative-serving-core.fullname" . }}-config-logging
+  labels:
+    app.kubernetes.io/component: logging
+  {{- include "knative-serving-core.labels" . | nindent 4 }}
+  annotations:
+    knative.dev/example-checksum: 9f25d429
+data:
+  _example: {{ .Values.configLogging.Example | toYaml | indent 1 }}

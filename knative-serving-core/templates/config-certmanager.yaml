@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "knative-serving-core.fullname" . }}-config-certmanager
+  labels:
+    app.kubernetes.io/component: controller
+    networking.knative.dev/certificate-provider: cert-manager
+  {{- include "knative-serving-core.labels" . | nindent 4 }}
+  annotations:
+    knative.dev/example-checksum: b7a9a602
+data:
+  _example: {{ .Values.configCertmanager.Example | toYaml | indent 1 }}

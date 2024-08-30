@@ -1,0 +1,15 @@
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: {{ include "knative-net-istio.fullname" . }}-webhook
+  labels:
+    app.kubernetes.io/component: net-istio
+    networking.knative.dev/ingress-provider: istio
+  {{- include "knative-net-istio.labels" . | nindent 4 }}
+spec:
+  portLevelMtls:
+    "8443":
+      mode: PERMISSIVE
+  selector:
+    matchLabels:
+      app: webhook

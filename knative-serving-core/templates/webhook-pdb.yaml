@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "knative-serving-core.fullname" . }}-webhook-pdb
+  labels:
+    app.kubernetes.io/component: webhook
+  {{- include "knative-serving-core.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.webhookPdb.minAvailable }}
+  maxUnavailable: {{ .Values.webhookPdb.maxUnavailable }}
+  selector:
+    matchLabels:
+      app: webhook
+    {{- include "knative-serving-core.selectorLabels" . | nindent 6 }}

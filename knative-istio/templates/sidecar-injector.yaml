@@ -1,0 +1,167 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "knative-istio.fullname" . }}-sidecar-injector
+  labels:
+    install.operator.istio.io/owning-resource: unknown
+    istio.io/rev: default
+    operator.istio.io/component: Pilot
+    release: istio
+  {{- include "knative-istio.labels" . | nindent 4 }}
+data:
+  config: {{ .Values.sidecarInjector.config | toYaml | indent 1 }}
+  values: {{ .Values.sidecarInjector.values | toYaml | indent 1 }}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "knative-istio.fullname" . }}-sidecar-injector
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "knative-istio.fullname" . }}-
+  labels:
+  {{- include "knative-istio.labels" . | nindent 4 }}
+webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "knative-istio.fullname" . }}-d'
+      namespace: '{{ .Release.Namespace }}'
+      path: /inject
+      port: 443
+  failurePolicy: Fail
+  name: rev.namespace.sidecar-injector.istio.io
+  namespaceSelector:
+    matchExpressions:
+    - key: istio.io/rev
+      operator: In
+      values:
+      - default
+    - key: istio-injection
+      operator: DoesNotExist
+  objectSelector:
+    matchExpressions:
+    - key: sidecar.istio.io/inject
+      operator: NotIn
+      values:
+      - "false"
+  reinvocationPolicy: Never
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "knative-istio.fullname" . }}-d'
+      namespace: '{{ .Release.Namespace }}'
+      path: /inject
+      port: 443
+  failurePolicy: Fail
+  name: rev.object.sidecar-injector.istio.io
+  namespaceSelector:
+    matchExpressions:
+    - key: istio.io/rev
+      operator: DoesNotExist
+    - key: istio-injection
+      operator: DoesNotExist
+  objectSelector:
+    matchExpressions:
+    - key: sidecar.istio.io/inject
+      operator: NotIn
+      values:
+      - "false"
+    - key: istio.io/rev
+      operator: In
+      values:
+      - default
+  reinvocationPolicy: Never
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "knative-istio.fullname" . }}-d'
+      namespace: '{{ .Release.Namespace }}'
+      path: /inject
+      port: 443
+  failurePolicy: Fail
+  name: namespace.sidecar-injector.istio.io
+  namespaceSelector:
+    matchExpressions:
+    - key: istio-injection
+      operator: In
+      values:
+      - enabled
+  objectSelector:
+    matchExpressions:
+    - key: sidecar.istio.io/inject
+      operator: NotIn
+      values:
+      - "false"
+  reinvocationPolicy: Never
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "knative-istio.fullname" . }}-d'
+      namespace: '{{ .Release.Namespace }}'
+      path: /inject
+      port: 443
+  failurePolicy: Fail
+  name: object.sidecar-injector.istio.io
+  namespaceSelector:
+    matchExpressions:
+    - key: istio-injection
+      operator: DoesNotExist
+    - key: istio.io/rev
+      operator: DoesNotExist
+  objectSelector:
+    matchExpressions:
+    - key: sidecar.istio.io/inject
+      operator: In
+      values:
+      - "true"
+    - key: istio.io/rev
+      operator: DoesNotExist
+  reinvocationPolicy: Never
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+  sideEffects: None

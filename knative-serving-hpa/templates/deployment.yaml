@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "knative-serving-hpa.fullname" . }}-autoscaler-hpa
+  labels:
+    app.kubernetes.io/component: autoscaler-hpa
+    autoscaling.knative.dev/autoscaler-provider: hpa
+  {{- include "knative-serving-hpa.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: autoscaler-hpa
+    {{- include "knative-serving-hpa.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: autoscaler-hpa
+        app.kubernetes.io/component: autoscaler-hpa
+        app.kubernetes.io/name: knative-serving
+        app.kubernetes.io/version: 1.15.2
+      {{- include "knative-serving-hpa.selectorLabels" . | nindent 8 }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: autoscaler-hpa
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      containers:
+      - env:
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: CONFIG_LOGGING_NAME
+          value: {{ quote .Values.autoscalerHpa.autoscalerHpa.env.configLoggingName }}
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: {{ quote .Values.autoscalerHpa.autoscalerHpa.env.configObservabilityName
+            }}
+        - name: METRICS_DOMAIN
+          value: {{ quote .Values.autoscalerHpa.autoscalerHpa.env.metricsDomain }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.autoscalerHpa.autoscalerHpa.image.repository }}:{{ .Values.autoscalerHpa.autoscalerHpa.image.tag
+          | default .Chart.AppVersion }}
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /health
+            port: probes
+            scheme: HTTP
+          periodSeconds: 5
+        name: autoscaler-hpa
+        ports:
+        - containerPort: 9090
+          name: metrics
+        - containerPort: 8008
+          name: profiling
+        - containerPort: 8080
+          name: probes
+        readinessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /readiness
+            port: probes
+            scheme: HTTP
+          periodSeconds: 5
+        resources: {{- toYaml .Values.autoscalerHpa.autoscalerHpa.resources | nindent 10
+          }}
+        securityContext: {{- toYaml .Values.autoscalerHpa.autoscalerHpa.containerSecurityContext
+          | nindent 10 }}
+      serviceAccountName: controller
