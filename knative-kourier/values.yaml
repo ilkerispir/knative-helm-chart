@@ -1,0 +1,248 @@
+3ScaleKourierGateway:
+  kourierGateway:
+    args:
+    - --base-id 1
+    - -c /tmp/config/envoy-bootstrap.yaml
+    - --log-level info
+    - --drain-time-s $(DRAIN_TIME_SECONDS)
+    - --drain-strategy immediate
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: false
+      runAsGroup: 65534
+      runAsNonRoot: true
+      runAsUser: 65534
+      seccompProfile:
+        type: RuntimeDefault
+    env:
+      drainTimeSeconds: "15"
+    image:
+      repository: docker.io/envoyproxy/envoy
+      tag: v1.26-latest
+    resources:
+      limits:
+        cpu: "1"
+        memory: 800Mi
+      requests:
+        cpu: 200m
+        memory: 200Mi
+3ScaleKourierGatewayPdb:
+  minAvailable: 0
+configKourier:
+  Example: |-
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+    # Specifies whether requests reaching the Kourier gateway
+    # in the context of services should be logged. Readiness
+    # probes etc. must be configured via the bootstrap config.
+    enable-service-access-logging: "true"
+    # Specifies whether to use proxy-protocol in order to safely
+    # transport connection information such as a client's address
+    # across multiple layers of TCP proxies.
+    # NOTE THAT THIS IS AN EXPERIMENTAL / ALPHA FEATURE
+    enable-proxy-protocol: "false"
+    # The server certificates to serve the internal TLS traffic for Kourier Gateway.
+    # It is specified by the secret name in controller namespace, which has
+    # the "tls.crt" and "tls.key" data field.
+    # Use an empty value to disable the feature (default).
+    #
+    # NOTE: This flag is in an alpha state and is mostly here to enable internal testing
+    #       for now. Use with caution.
+    cluster-cert-secret: ""
+    # Specifies the amount of time that Kourier waits for the incoming requests.
+    # The default, 0s, imposes no timeout at all.
+    stream-idle-timeout: "0s"
+    # Specifies whether to use CryptoMB private key provider in order to
+    # acclerate the TLS handshake.
+    # NOTE THAT THIS IS AN EXPERIMENTAL / ALPHA FEATURE.
+    enable-cryptomb: "false"
+    # Configures the number of additional ingress proxy hops from the
+    # right side of the x-forwarded-for HTTP header to trust.
+    trusted-hops-count: "0"
+    # Specifies the cipher suites for TLS external listener.
+    # Use ',' separated values like "ECDHE-ECDSA-AES128-GCM-SHA256,ECDHE-ECDSA-CHACHA20-POLY1305"
+    # The default uses the default cipher suites of the envoy version.
+    cipher-suites: ""
+kourier:
+  ports:
+  - name: http2
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  type: LoadBalancer
+kourierBootstrap:
+  envoyBootstrapYaml: |-
+    dynamic_resources:
+      ads_config:
+        transport_api_version: V3
+        api_type: GRPC
+        rate_limit_settings: {}
+        grpc_services:
+        - envoy_grpc: {cluster_name: xds_cluster}
+      cds_config:
+        resource_api_version: V3
+        ads: {}
+      lds_config:
+        resource_api_version: V3
+        ads: {}
+    node:
+      cluster: kourier-knative
+      id: 3scale-kourier-gateway
+    static_resources:
+      listeners:
+        - name: stats_listener
+          address:
+            socket_address:
+              address: 0.0.0.0
+              port_value: 9000
+          filter_chains:
+            - filters:
+                - name: envoy.filters.network.http_connection_manager
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                    stat_prefix: stats_server
+                    http_filters:
+                      - name: envoy.filters.http.router
+                        typed_config:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                    route_config:
+                      virtual_hosts:
+                        - name: admin_interface
+                          domains:
+                            - "*"
+                          routes:
+                            - match:
+                                safe_regex:
+                                  regex: '/(certs|stats(/prometheus)?|server_info|clusters|listeners|ready)?'
+                                headers:
+                                  - name: ':method'
+                                    string_match:
+                                      exact: GET
+                              route:
+                                cluster: service_stats
+                            - match:
+                                safe_regex:
+                                  regex: '/drain_listeners'
+                                headers:
+                                  - name: ':method'
+                                    string_match:
+                                      exact: POST
+                              route:
+                                cluster: service_stats
+      clusters:
+        - name: service_stats
+          connect_timeout: 0.250s
+          type: static
+          load_assignment:
+            cluster_name: service_stats
+            endpoints:
+              lb_endpoints:
+                endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: 9901
+        - name: xds_cluster
+          # This keepalive is recommended by envoy docs.
+          # https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol
+          typed_extension_protocol_options:
+            envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+              "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+              explicit_http_config:
+                http2_protocol_options:
+                  connection_keepalive:
+                    interval: 30s
+                    timeout: 5s
+          connect_timeout: 1s
+          load_assignment:
+            cluster_name: xds_cluster
+            endpoints:
+              lb_endpoints:
+                endpoint:
+                  address:
+                    socket_address:
+                      address: "net-kourier-controller.knative-serving"
+                      port_value: 18000
+          type: STRICT_DNS
+    admin:
+      access_log:
+      - name: envoy.access_loggers.stdout
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+      address:
+        socket_address:
+          address: 127.0.0.1
+          port_value: 9901
+kourierInternal:
+  ports:
+  - name: http2
+    port: 80
+    protocol: TCP
+    targetPort: 8081
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: 8444
+  type: ClusterIP
+kubernetesClusterDomain: cluster.local
+netKourier:
+  serviceAccount:
+    annotations: {}
+netKourierController:
+  controller:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    env:
+      certsSecretName: ""
+      certsSecretNamespace: ""
+      enableSecretInformerFilteringByCertUid: "false"
+      kourierGatewayNamespace: kourier-system
+      kubeApiBurst: "200"
+      kubeApiQps: "200"
+      metricsDomain: knative.dev/samples
+    image:
+      repository: gcr.io/knative-releases/knative.dev/net-kourier/cmd/kourier@sha256
+      tag: 0f345516b3d172dac408c08e58f1318056e8461861ba15f1a0215370ddd6e685
+    resources:
+      limits:
+        cpu: "1"
+        memory: 500Mi
+      requests:
+        cpu: 200m
+        memory: 200Mi
+  ports:
+  - name: grpc-xds
+    port: 18000
+    protocol: TCP
+    targetPort: 18000
+  - name: http-metrics
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+  replicas: 1
+  type: ClusterIP
