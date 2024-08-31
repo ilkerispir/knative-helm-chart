@@ -5,7 +5,7 @@ entries:
       appVersion: "0.1.0"
       created: "2024-08-31T12:00:00.000Z"
       description: A Helm chart for Knative Serving
-      digest: ""
+      digest: "351d6db5739923fd09ef8c2c4e3386129d3749ed2357df422292845d52333370"
       name: knative-serving
       type: application
       urls:
