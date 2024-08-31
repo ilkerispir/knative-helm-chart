@@ -24,16 +24,15 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
 
-      - name: Package All Helm Charts
+      - name: Add repositories
         run: |
-          mkdir -p ./docs
-          for dir in charts/*; do
-            helm package $dir --destination ./docs
+          for dir in $(ls -d charts/*/); do
+            chart_name=$(basename $dir)
+            helm repo add $chart_name file://$dir
+            echo "Added $chart_name to the knative-serving chart dependencies."
           done
 
-      - name: Create GitHub Release
+      - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
-        with:
-          files: docs/*.tgz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CR_TOKEN: "${{ secrets.HELM_TOKEN }}"
