@@ -10,6 +10,5 @@ entries:
       type: application
       urls:
         - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-0.1.0/knative-serving-0.1.0.tgz
-    version: 3.21.0
       version: 0.1.0
 generated: "2024-08-31T12:00:00.000Z"
