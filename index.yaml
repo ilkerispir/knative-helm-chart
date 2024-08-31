@@ -1,14 +1,80 @@
 apiVersion: v1
 entries:
+  knative-istio:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2024-08-31T13:10:10.733929564Z"
+    description: A Helm chart for Kubernetes
+    digest: dd552c3b3fe1cb1f18aa84465aed89189fc69efb3ac323cebc52f0c008e67c7c
+    name: knative-istio
+    type: application
+    urls:
+    - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-istio-0.1.0/knative-istio-0.1.0.tgz
+    version: 0.1.0
+  knative-kourier:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2024-08-31T13:10:10.851113966Z"
+    description: A Helm chart for Kubernetes
+    digest: 70191ec5b03bf296b703c8c5d3dac21245ab53d1d674831933538c5891da86f7
+    name: knative-kourier
+    type: application
+    urls:
+    - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-kourier-0.1.0/knative-kourier-0.1.0.tgz
+    version: 0.1.0
+  knative-net-istio:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2024-08-31T13:10:10.985360445Z"
+    description: A Helm chart for Kubernetes
+    digest: dcd243b9a83be740f313dc7f95eb739425f357712c0af0a982416eb486599105
+    name: knative-net-istio
+    type: application
+    urls:
+    - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-net-istio-0.1.0/knative-net-istio-0.1.0.tgz
+    version: 0.1.0
   knative-serving:
-    - apiVersion: v2
-      appVersion: "0.1.0"
-      created: "2024-08-31T12:00:00.000Z"
-      description: A Helm chart for Knative Serving
-      digest: "351d6db5739923fd09ef8c2c4e3386129d3749ed2357df422292845d52333370"
-      name: knative-serving
-      type: application
-      urls:
-        - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-0.1.0/knative-serving-0.1.0.tgz
-      version: 0.1.0
-generated: "2024-08-31T12:00:00.000Z"
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2024-08-31T12:00:00Z"
+    description: A Helm chart for Knative Serving
+    digest: 351d6db5739923fd09ef8c2c4e3386129d3749ed2357df422292845d52333370
+    name: knative-serving
+    type: application
+    urls:
+    - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-0.1.0/knative-serving-0.1.0.tgz
+    version: 0.1.0
+  knative-serving-core:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2024-08-31T13:10:11.103003565Z"
+    description: A Helm chart for Kubernetes
+    digest: 2f702547d07639e6209df596d90b04a5f1e6578f6dc0d88b064068c0d87b3693
+    name: knative-serving-core
+    type: application
+    urls:
+    - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-core-0.1.0/knative-serving-core-0.1.0.tgz
+    version: 0.1.0
+  knative-serving-crds:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2024-08-31T13:10:11.213924111Z"
+    description: A Helm chart for Kubernetes
+    digest: df11858390cdb5b0f76aeafbe64bbcf9ea7cc6fe41d4093b9d0f3a7e037a7121
+    name: knative-serving-crds
+    type: application
+    urls:
+    - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-crds-0.1.0/knative-serving-crds-0.1.0.tgz
+    version: 0.1.0
+  knative-serving-hpa:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2024-08-31T13:10:11.329735458Z"
+    description: A Helm chart for Kubernetes
+    digest: 39c2f1400b7044e12e908ad5627c54b6cf60ad3309a9311eb9af6e935abc3d9d
+    name: knative-serving-hpa
+    type: application
+    urls:
+    - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-hpa-0.1.0/knative-serving-hpa-0.1.0.tgz
+    version: 0.1.0
+generated: "2024-08-31T13:10:11.329742572Z"
