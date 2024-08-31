@@ -1,2 +1,1 @@
-# knative-helm-chart
-Knative Serving Helm Charts
+# Knative Serving Helm Charts
