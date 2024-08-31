@@ -33,17 +33,6 @@ entries:
     urls:
     - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-net-istio-0.1.0/knative-net-istio-0.1.0.tgz
     version: 0.1.0
-  knative-serving:
-  - apiVersion: v2
-    appVersion: 0.1.0
-    created: "2024-08-31T12:00:00Z"
-    description: A Helm chart for Knative Serving
-    digest: 351d6db5739923fd09ef8c2c4e3386129d3749ed2357df422292845d52333370
-    name: knative-serving
-    type: application
-    urls:
-    - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-0.1.0/knative-serving-0.1.0.tgz
-    version: 0.1.0
   knative-serving-core:
   - apiVersion: v2
     appVersion: 0.1.0
