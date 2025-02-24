@@ -76,4 +76,14 @@ entries:
     urls:
     - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-hpa-0.1.0/knative-serving-hpa-0.1.0.tgz
     version: 0.1.0
-generated: "2025-02-24T05:52:33.9986898Z"
+  knative-serving-kourier:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-02-24T10:23:44.020763707Z"
+    description: Knative Serving Kourier Helm chart for Kubernetes
+    digest: c5f54018b7326a07848261a687d40ebf83159281bc3ac2e68a3feaf57af744bd
+    name: knative-serving-kourier
+    urls:
+    - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-kourier-0.1.0/knative-serving-kourier-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-02-24T10:23:44.020780949Z"
