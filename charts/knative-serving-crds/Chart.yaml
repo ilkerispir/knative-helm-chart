@@ -1,0 +1,5 @@
+apiVersion: v2
+name: knative-serving-crds
+version: "0.1.0"
+appVersion: "0.1.0"
+description: Knative Serving CRDs Helm chart for Kubernetes
