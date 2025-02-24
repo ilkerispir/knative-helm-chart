@@ -15,7 +15,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: knative-serving
+  name: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/name: knative-serving
@@ -41,7 +41,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: kourier-bootstrap
-  namespace: knative-serving
+  namespace: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
@@ -370,7 +370,7 @@ spec:
             - name: METRICS_DOMAIN
               value: "knative.dev/samples"
             - name: KOURIER_GATEWAY_NAMESPACE
-              value: "knative-serving"
+              value: "kourier-system"
             - name: ENABLE_SECRET_INFORMER_FILTERING_BY_CERT_UID
               value: "false"
             # KUBE_API_BURST and KUBE_API_QPS allows to configure maximum burst for throttle and maximum QPS to the server from the client.
@@ -459,7 +459,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: 3scale-kourier-gateway
-  namespace: knative-serving
+  namespace: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
@@ -580,8 +580,9 @@ metadata:
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-internal: "false"
     service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-name: {{ .Values.lbName }}
   name: kourier
-  namespace: knative-serving
+  namespace: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
@@ -605,7 +606,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kourier-internal
-  namespace: knative-serving
+  namespace: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
@@ -629,7 +630,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: 3scale-kourier-gateway
-  namespace: knative-serving
+  namespace: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
@@ -655,7 +656,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: 3scale-kourier-gateway-pdb
-  namespace: knative-serving
+  namespace: kourier-system
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
