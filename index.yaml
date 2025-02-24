@@ -33,6 +33,16 @@ entries:
     urls:
     - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-net-istio-0.1.0/knative-net-istio-0.1.0.tgz
     version: 0.1.0
+  knative-serving:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-02-24T05:52:33.998680603Z"
+    description: Knative Serving Helm chart for Kubernetes
+    digest: 00f044aaff980e37ab1f0bd7624013865d6b525a15f2af967a0b773dae1cdd85
+    name: knative-serving
+    urls:
+    - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-0.1.0/knative-serving-0.1.0.tgz
+    version: 0.1.0
   knative-serving-core:
   - apiVersion: v2
     appVersion: 0.1.0
@@ -66,4 +76,4 @@ entries:
     urls:
     - https://github.com/ilkerispir/knative-helm-chart/releases/download/knative-serving-hpa-0.1.0/knative-serving-hpa-0.1.0.tgz
     version: 0.1.0
-generated: "2024-08-31T13:10:11.329742572Z"
+generated: "2025-02-24T05:52:33.9986898Z"
