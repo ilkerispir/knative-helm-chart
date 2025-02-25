@@ -21,6 +21,10 @@ metadata:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: net-kourier
     app.kubernetes.io/version: "1.17.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: knative-serving-kourier
+    meta.helm.sh/release-namespace: kourier-system
 
 ---
 # Copyright 2020 The Knative Authors
