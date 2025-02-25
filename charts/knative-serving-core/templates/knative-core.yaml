@@ -7639,7 +7639,7 @@ data:
     #           topologyKey: kubernetes.io/hostname
     #           labelSelector:
     #             matchLabels:
-    #               serving.knative.dev/revision: {{revision-name}}
+    #               serving.knative.dev/revision: revision
     #         weight: 100
     # `
     # This may be "none" or "prefer-spread-revision-over-nodes" (default)
